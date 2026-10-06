@@ -1,0 +1,19 @@
+name: VysDragons
+version: '${version}'
+main: com.vys.vysdragons.VysDragons
+api-version: '1.21'
+load: POSTWORLD
+depend:
+  - MythicMobs
+  - ModelEngine
+  - Nexo
+commands:
+  vysdragons:
+    description: VysDragons admin commands
+    usage: /vysdragons <give|reload|info|grow>
+    aliases: [vd]
+    permission: vysdragons.admin
+permissions:
+  vysdragons.admin:
+    description: Use /vysdragons admin commands
+    default: op
