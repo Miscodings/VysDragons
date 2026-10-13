@@ -61,12 +61,21 @@ The plugin only references these by name, and every name can be changed in `conf
 - `egg.mob-type` (default `dragon_egg_fire`): the placed egg. It attaches its own model
   (e.g. `model{...}` on `~onSpawn`/`~onLoad`). `Type: WOLF` is recommended, because tamed
   wolves never despawn.
-- `dragon.mob-types.baby|young|adult` (defaults `cksmp_dragon_baby` / `cksmp_dragon_adult` /
-  `cksmp_dragon_adult`): the dragon body. `Type: WOLF`, AI goals cleared. The plugin attaches
-  the ModelEngine model itself, so these mobs should **not** attach one. Young and adult need
-  the mount/flight controller and breath skills on `~onInteract`. The existing
-  `cksmp_dragon_adult` + `dragon_adult-skills.yml` setup already does this. If young and
-  adult share a mob type, growing up swaps the model in place instead of respawning.
+- `dragon.mob-types.baby|young|adult` (default `cksmp_dragon_adult` for all three): the dragon
+  body. `Type: WOLF`, AI goals cleared. The plugin attaches the ModelEngine model itself, so
+  the mob should **not** attach one. It needs the mount/flight controller and breath skills
+  on `~onInteract`. Babies share it safely, since they can never be saddled. With one shared
+  mob type, growing up swaps the model in place instead of respawning.
+
+The server layout used on the Vys server:
+
+```
+plugins/MythicMobs/Mobs/VysDragons/eggs.yml        dragon_egg_fire
+plugins/MythicMobs/Mobs/VysDragons/dragons.yml     cksmp_dragon_adult
+plugins/MythicMobs/Skills/VysDragons/flight.yml    mount + flight controller
+plugins/MythicMobs/Skills/VysDragons/breath.yml    fire breath
+plugins/ModelEngine/blueprints/vysdragons/{egg,baby,young,adult,adult_saddled}/
+```
 
 Variables the plugin sets on every dragon mob:
 
@@ -87,6 +96,9 @@ through `<caster.damage>`.
 - Young and adult need a `seat` bone, a `firebreath` bone, and the flight controller's
   animations (`idle_fly_raw`, `walk_fly_raw`, `ascend`, `descend`, `land`, `fire_breath`, ...).
   Adult also needs a `seat2` bone. All models need `sit`, and babies need `quirk`.
+- Nothing else is used. Animations the plugin and skills never play only bloat the
+  resource pack: baby needs `idle walk sit quirk`; young/adult need `idle walk sit
+  idle_fly_raw walk_fly_raw ascend descend drift_left_raw drift_right_raw land fire_breath`.
 
 ## Building
 
