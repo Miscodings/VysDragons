@@ -73,6 +73,20 @@ class Settings(private val cfg: FileConfiguration, private val log: (String) -> 
     val nameplate: String = cfg.getString("dragon.nameplate", "")!!
     fun stageName(stage: DragonStage): String = cfg.getString("dragon.stage-names.${stage.key}", stage.key)!!
 
+    // ---- menu ----
+    val menuTitle: String = cfg.getString("menu.title", "Your Dragons")!!
+    val menuItemOut: Material = material("menu.item-out", Material.DRAGON_HEAD)
+    val menuItemStored: Material = material("menu.item-stored", Material.DRAGON_EGG)
+    val menuName: String = cfg.getString("menu.name", "%skin% Dragon")!!
+    val menuLoreOut: List<String> = cfg.getStringList("menu.lore-out")
+    val menuLoreStored: List<String> = cfg.getStringList("menu.lore-stored")
+    val menuGrowsIn: String = cfg.getString("menu.grows-in", "Grows up in %time%")!!
+    val menuFullyGrown: String = cfg.getString("menu.fully-grown", "Fully grown")!!
+    val menuSaddledYes: String = cfg.getString("menu.saddled-yes", "Yes")!!
+    val menuSaddledNo: String = cfg.getString("menu.saddled-no", "No")!!
+    val menuEmptyItem: Material = material("menu.empty-item", Material.BARRIER)
+    val menuEmptyName: String = cfg.getString("menu.empty-name", "No dragons yet")!!
+
     // ---- messages ----
     private val prefix = cfg.getString("messages.prefix", "")!!
 

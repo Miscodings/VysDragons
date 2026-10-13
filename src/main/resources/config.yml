@@ -145,6 +145,33 @@ dragon:
     young: Young
     adult: Adult
 
+# /dragons - every dragon the player owns. Click a stored dragon to summon it to you
+# (any other dragon that's out is put away first), click one that's out to put it
+# away. Stored dragons keep growing. Placeholders: %skin%, %stage%, %growth%, %saddled%
+menu:
+  title: "<dark_purple>Your Dragons"
+  item-out: DRAGON_HEAD
+  item-stored: DRAGON_EGG
+  name: "<gold>%skin% Dragon <gray>(%stage%)"
+  lore-out:
+    - "<green>Out"
+    - "<gray>%growth%"
+    - "<gray>Saddled: <white>%saddled%"
+    - ""
+    - "<yellow>Click to put away"
+  lore-stored:
+    - "<aqua>Stored"
+    - "<gray>%growth%"
+    - "<gray>Saddled: <white>%saddled%"
+    - ""
+    - "<yellow>Click to summon"
+  grows-in: "Grows up in <white>%time%"
+  fully-grown: "Fully grown"
+  saddled-yes: "Yes"
+  saddled-no: "No"
+  empty-item: BARRIER
+  empty-name: "<red>You don't have any dragons yet"
+
 messages:
   prefix: "<dark_purple>[Dragons]</dark_purple> "
   egg-placed: "<gray>Egg placed. Surround it with <gold>%count%</gold> heat blocks (fire, lava, magma, campfires) to incubate it."
@@ -164,4 +191,8 @@ messages:
   seat-taken: "<red>The passenger seat is taken."
   give-success: "<green>Gave %amount% dragon egg(s) to %player%."
   give-failed: "<red>Nexo item '%item%' doesn't exist."
+  summoned: "<green>Your dragon appears!"
+  stored: "<gray>Your dragon has been put away."
+  cant-while-ridden: "<red>Get off your dragon first."
+  summon-failed: "<red>Your dragon couldn't be summoned here. Tell an admin (check the console)."
   reloaded: "<green>VysDragons config reloaded."

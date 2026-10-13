@@ -33,6 +33,7 @@ class Dragon(
     stageStartedAt: Long,
     saddled: Boolean,
     sitting: Boolean,
+    stored: Boolean,
     var world: String,
     var x: Double,
     var y: Double,
@@ -46,6 +47,10 @@ class Dragon(
     var saddled = saddled
         private set
     var sitting = sitting
+        private set
+
+    /** Put away by the owner: no body anywhere, but growth keeps running. */
+    var stored = stored
         private set
 
     var entity: LivingEntity? = null
@@ -68,12 +73,12 @@ class Dragon(
     /** Spawns the body if its chunk is loaded. Returns true if the dragon is live afterwards. */
     fun activate(): Boolean {
         if (isActive) return true
+        if (stored) return false
         val loc = location() ?: return false
         if (!loc.world.isChunkLoaded(loc.blockX shr 4, loc.blockZ shr 4)) return false
 
         // Wall-clock growth that happened while unloaded, before anything is spawned.
-        val now = System.currentTimeMillis()
-        while (advanceStageIfDue(now)) continue
+        catchUpGrowth()
 
         val mobType = settings.mobType(stage)
         val mythicMob = MythicBukkit.inst().mobManager.getMythicMob(mobType).orElse(null)
@@ -283,6 +288,37 @@ class Dragon(
         }
     }
 
+    /** Applies growth that happened while there was no body (unloaded or stored). */
+    fun catchUpGrowth() {
+        val now = System.currentTimeMillis()
+        while (advanceStageIfDue(now)) continue
+    }
+
+    // ==================== store / summon ====================
+
+    /** Removes the body and marks the dragon stored. */
+    fun store() {
+        deactivate()
+        stored = true
+        save()
+    }
+
+    /** Brings the dragon out at [loc] (normally its owner). False if it couldn't spawn there. */
+    fun summon(loc: Location): Boolean {
+        deactivate()
+        world = loc.world.name
+        x = loc.x
+        y = loc.y
+        z = loc.z
+        yaw = loc.yaw
+        stored = false
+        sitting = false
+        save()
+        if (!activate()) return false
+        entity?.let { grantTeleportGrace(it) }
+        return true
+    }
+
     /** Admin: skip the rest of the current stage. */
     fun forceGrow(): Boolean {
         val duration = settings.stageMillis(stage) ?: return false
@@ -386,7 +422,7 @@ class Dragon(
 
     fun save() = plugin.db.saveDragon(toRow())
 
-    fun toRow() = DragonRow(uuid, owner, skin, stage.key, stageStartedAt, saddled, sitting, world, x, y, z, yaw)
+    fun toRow() = DragonRow(uuid, owner, skin, stage.key, stageStartedAt, saddled, sitting, stored, world, x, y, z, yaw)
 
     /** Delayed task that drops itself if this body was replaced meanwhile. */
     private fun later(ticks: Long, block: () -> Unit) {
@@ -398,7 +434,7 @@ class Dragon(
         fun fromRow(row: DragonRow): Dragon? {
             val stage = DragonStage.fromKey(row.stage) ?: return null
             return Dragon(
-                row.uuid, row.owner, row.skin, stage, row.stageStartedAt, row.saddled, row.sitting,
+                row.uuid, row.owner, row.skin, stage, row.stageStartedAt, row.saddled, row.sitting, row.stored,
                 row.world, row.x, row.y, row.z, row.yaw,
             )
         }

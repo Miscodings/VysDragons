@@ -4,6 +4,7 @@ import com.vys.vysdragons.VysDragons
 import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.Location
+import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitTask
 import java.util.UUID
 import kotlin.math.floor
@@ -63,16 +64,44 @@ class DragonManager(private val plugin: VysDragons) {
             stageStartedAt = System.currentTimeMillis(),
             saddled = false,
             sitting = false,
+            stored = false,
             world = location.world.name,
             x = location.x,
             y = location.y,
             z = location.z,
             yaw = location.yaw,
         )
+        // One dragon out at a time: the newborn replaces whatever was out.
+        owned(owner).forEach { if (!it.stored) it.store() }
         dragons[dragon.uuid] = dragon
         dragon.save()
         dragon.activate()
         return dragon
+    }
+
+    fun owned(owner: UUID): List<Dragon> = dragons.values.filter { it.owner == owner }
+
+    fun byId(uuid: UUID): Dragon? = dragons[uuid]
+
+    enum class SummonResult { OK, RIDDEN, FAILED }
+
+    /** Brings [dragon] to [player], putting away any other dragon of theirs that's out. */
+    fun summon(dragon: Dragon, player: Player): SummonResult {
+        val others = owned(dragon.owner).filter { it !== dragon && !it.stored }
+        if (dragon.isRidden() || others.any { it.isRidden() }) return SummonResult.RIDDEN
+        others.forEach { it.store() }
+        if (!dragon.summon(player.location)) {
+            dragon.store()
+            return SummonResult.FAILED
+        }
+        return SummonResult.OK
+    }
+
+    /** False if someone is riding it. */
+    fun store(dragon: Dragon): Boolean {
+        if (dragon.isRidden()) return false
+        dragon.store()
+        return true
     }
 
     /** Permanently forgets a dragon (death). */

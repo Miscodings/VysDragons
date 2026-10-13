@@ -18,6 +18,7 @@ data class DragonRow(
     val stageStartedAt: Long,
     val saddled: Boolean,
     val sitting: Boolean,
+    val stored: Boolean,
     val world: String,
     val x: Double,
     val y: Double,
@@ -58,8 +59,14 @@ class Database(file: File, private val logger: Logger) {
                 """CREATE TABLE IF NOT EXISTS dragons (
                     uuid TEXT PRIMARY KEY, owner TEXT NOT NULL, skin TEXT NOT NULL, stage TEXT NOT NULL,
                     stage_started_at INTEGER NOT NULL, saddled INTEGER NOT NULL, sitting INTEGER NOT NULL,
-                    world TEXT NOT NULL, x REAL NOT NULL, y REAL NOT NULL, z REAL NOT NULL, yaw REAL NOT NULL)"""
+                    world TEXT NOT NULL, x REAL NOT NULL, y REAL NOT NULL, z REAL NOT NULL, yaw REAL NOT NULL,
+                    stored INTEGER NOT NULL DEFAULT 0)"""
             )
+            // Added with store/summon; databases from 1.0.0 lack it.
+            val hasStored = st.executeQuery("PRAGMA table_info(dragons)").use { rs ->
+                generateSequence { if (rs.next()) rs.getString("name") else null }.any { it == "stored" }
+            }
+            if (!hasStored) st.execute("ALTER TABLE dragons ADD COLUMN stored INTEGER NOT NULL DEFAULT 0")
             st.execute(
                 """CREATE TABLE IF NOT EXISTS eggs (
                     uuid TEXT PRIMARY KEY, owner TEXT NOT NULL, world TEXT NOT NULL,
@@ -73,7 +80,7 @@ class Database(file: File, private val logger: Logger) {
         DragonRow(
             UUID.fromString(rs.getString("uuid")), UUID.fromString(rs.getString("owner")),
             rs.getString("skin"), rs.getString("stage"), rs.getLong("stage_started_at"),
-            rs.getInt("saddled") != 0, rs.getInt("sitting") != 0, rs.getString("world"),
+            rs.getInt("saddled") != 0, rs.getInt("sitting") != 0, rs.getInt("stored") != 0, rs.getString("world"),
             rs.getDouble("x"), rs.getDouble("y"), rs.getDouble("z"), rs.getFloat("yaw"),
         )
     }
@@ -88,13 +95,14 @@ class Database(file: File, private val logger: Logger) {
 
     fun saveDragon(row: DragonRow) = write {
         connection.prepareStatement(
-            "INSERT OR REPLACE INTO dragons VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
+            "INSERT OR REPLACE INTO dragons (uuid, owner, skin, stage, stage_started_at, saddled, sitting, " +
+                "world, x, y, z, yaw, stored) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"
         ).use { ps ->
             ps.setString(1, row.uuid.toString()); ps.setString(2, row.owner.toString())
             ps.setString(3, row.skin); ps.setString(4, row.stage); ps.setLong(5, row.stageStartedAt)
             ps.setInt(6, if (row.saddled) 1 else 0); ps.setInt(7, if (row.sitting) 1 else 0)
             ps.setString(8, row.world); ps.setDouble(9, row.x); ps.setDouble(10, row.y)
-            ps.setDouble(11, row.z); ps.setFloat(12, row.yaw)
+            ps.setDouble(11, row.z); ps.setFloat(12, row.yaw); ps.setInt(13, if (row.stored) 1 else 0)
             ps.executeUpdate()
         }
     }

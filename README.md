@@ -29,7 +29,14 @@ A dragon that dies is gone permanently. Players can own any number of dragons.
 - **Right-click** (saddled, on the ground): mount. From there the MythicMobs flight controller
   handles takeoff, flying, breath and landing.
 
-### Commands (`vysdragons.admin`, op by default)
+### Summon / put away (`/dragons`, everyone)
+
+`/dragons` opens a menu listing every dragon you own. Click a stored dragon to summon it
+next to you, or click one that's out to put it away. Only one dragon can be out at a time:
+summoning one puts away whichever is already out, and so does hatching a new egg. Stored
+dragons keep growing. You can't summon or store while someone is riding.
+
+### Admin commands (`vysdragons.admin`, op by default)
 
 - `/vysdragons give <player> [amount]`: give egg items.
 - `/vysdragons reload`: reload `config.yml`. Model/mob changes apply to dragons the next time they respawn.
@@ -96,7 +103,7 @@ Then run:
 ./gradlew build -PapiDir=/path/to/that/folder
 ```
 
-The output is `build/libs/VysDragons-1.0.0.jar`. Kotlin is shaded in. SQLite comes from Paper.
+The output is `build/libs/VysDragons-1.1.0.jar`. Kotlin is shaded in. SQLite comes from Paper.
 
 ## Data
 

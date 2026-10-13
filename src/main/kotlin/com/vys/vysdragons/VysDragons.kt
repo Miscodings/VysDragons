@@ -5,6 +5,8 @@ import com.vys.vysdragons.data.Database
 import com.vys.vysdragons.dragon.DragonManager
 import com.vys.vysdragons.egg.EggManager
 import com.vys.vysdragons.listener.DragonListener
+import com.vys.vysdragons.menu.DragonMenu
+import org.bukkit.entity.Player
 import org.bukkit.NamespacedKey
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
@@ -31,6 +33,11 @@ class VysDragons : JavaPlugin() {
         eggs = EggManager(this)
 
         server.pluginManager.registerEvents(DragonListener(this), this)
+        server.pluginManager.registerEvents(DragonMenu.Listener, this)
+        getCommand("dragons")?.setExecutor { sender, _, _, _ ->
+            (sender as? Player)?.let { DragonMenu(it).open() }
+            true
+        }
         getCommand("vysdragons")?.let {
             val command = VysDragonsCommand(this)
             it.setExecutor(command)
