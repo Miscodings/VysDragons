@@ -47,7 +47,7 @@ class VysDragonsCommand(private val plugin: VysDragons) : TabExecutor {
 
     private fun info(sender: CommandSender) {
         val player = sender as? Player ?: return
-        val target = player.getTargetEntity(10) ?: return player.sendMessage(Settings.MINI.deserialize("<red>Look at a dragon or egg."))
+        val target = target(player) ?: return player.sendMessage(Settings.MINI.deserialize("<red>Look at a dragon or egg."))
         val now = System.currentTimeMillis()
         plugin.dragons.byEntity(target.uniqueId)?.let { dragon ->
             val left = dragon.remainingStageMillis(now)?.let { formatDuration(it) } ?: "fully grown"
@@ -70,7 +70,7 @@ class VysDragonsCommand(private val plugin: VysDragons) : TabExecutor {
 
     private fun grow(sender: CommandSender) {
         val player = sender as? Player ?: return
-        val target = player.getTargetEntity(10)
+        val target = target(player)
         val dragon = target?.let { plugin.dragons.byEntity(it.uniqueId) }
         if (dragon != null) {
             val ok = dragon.forceGrow()
@@ -85,6 +85,21 @@ class VysDragonsCommand(private val plugin: VysDragons) : TabExecutor {
         }
         player.sendMessage(Settings.MINI.deserialize("<red>Look at a dragon or egg."))
     }
+
+    /**
+     * The dragon or egg the player is looking at. ModelEngine models replace the mob's
+     * hitbox, so the vanilla ray trace often misses them; falls back to the nearest
+     * dragon or egg within 8 blocks.
+     */
+    private fun target(player: Player): org.bukkit.entity.Entity? {
+        player.getTargetEntity(10)?.takeIf { isTracked(it) }?.let { return it }
+        return player.getNearbyEntities(8.0, 8.0, 8.0)
+            .filter { isTracked(it) }
+            .minByOrNull { it.location.distanceSquared(player.location) }
+    }
+
+    private fun isTracked(entity: org.bukkit.entity.Entity) =
+        plugin.dragons.byEntity(entity.uniqueId) != null || plugin.eggs.byEntity(entity.uniqueId) != null
 
     override fun onTabComplete(sender: CommandSender, command: Command, label: String, args: Array<out String>): List<String> =
         when (args.size) {

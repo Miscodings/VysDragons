@@ -4,6 +4,7 @@ import com.vys.vysdragons.VysDragons
 import com.vys.vysdragons.dragon.Dragon
 import com.vys.vysdragons.dragon.DragonStage
 import com.vys.vysdragons.util.SpawnBypass
+import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
 import io.lumine.mythic.bukkit.events.MythicMobInteractEvent
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -92,6 +93,23 @@ class DragonListener(private val plugin: VysDragons) : Listener {
         val player = damager as? Player ?: (damager as? Projectile)?.shooter as? Player ?: return
         plugin.eggs.pickUp(egg)
         player.sendMessage(settings.message("egg-picked-up"))
+    }
+
+    /**
+     * The egg's model has its own hitbox, so ModelEngine handles clicks on it and the
+     * vanilla damage event above may never fire. This catches those hits. ModelEngine
+     * can fire it off the main thread, so the pickup is moved onto it.
+     */
+    @EventHandler
+    fun onEggModelHit(event: BaseEntityInteractEvent) {
+        if (event.action != BaseEntityInteractEvent.Action.ATTACK) return
+        val entityId = event.baseEntity.uuid
+        val player = event.player
+        Bukkit.getScheduler().runTask(plugin, Runnable {
+            val egg = plugin.eggs.byEntity(entityId) ?: return@Runnable
+            plugin.eggs.pickUp(egg)
+            player.sendMessage(settings.message("egg-picked-up"))
+        })
     }
 
     @EventHandler
