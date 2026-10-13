@@ -51,7 +51,7 @@ class EggManager(private val plugin: VysDragons) {
         val now = System.currentTimeMillis()
         eggs.values.forEach {
             if (it.isActive) it.tick(now)
-            it.deactivate()
+            it.deactivate(immediate = true)
             it.save()
         }
         eggs.clear()

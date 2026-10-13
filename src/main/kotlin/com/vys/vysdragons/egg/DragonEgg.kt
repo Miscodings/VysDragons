@@ -5,6 +5,7 @@ import com.vys.vysdragons.VysDragons
 import com.vys.vysdragons.data.EggRow
 import com.vys.vysdragons.util.SpawnBypass
 import com.vys.vysdragons.util.formatDuration
+import com.ticxo.modelengine.api.ModelEngineAPI
 import io.lumine.mythic.bukkit.BukkitAdapter
 import io.lumine.mythic.bukkit.MythicBukkit
 import org.bukkit.Bukkit
@@ -89,13 +90,25 @@ class DragonEgg(
         return true
     }
 
-    fun deactivate() {
+    /** [immediate] skips the two-tick removal grace; only for shutdown. */
+    fun deactivate(immediate: Boolean = false) {
         val body = entity
         entity = null
         if (body != null) {
             plugin.eggs.unindexEntity(body.uniqueId)
-            runCatching { MythicBukkit.inst().mobManager.getActiveMob(body.uniqueId).orElse(null)?.remove() }
-            if (body.isValid) body.remove()
+            runCatching {
+                ModelEngineAPI.getModeledEntity(body.uniqueId)?.let { modeled ->
+                    modeled.models.keys.toList().forEach { id -> modeled.removeModel(id).ifPresent { it.destroy() } }
+                    modeled.destroy()
+                }
+                ModelEngineAPI.removeModeledEntity(body.uniqueId)
+            }
+            // Same two-tick grace as dragons, so the model's removal reaches players.
+            val remove = Runnable {
+                runCatching { MythicBukkit.inst().mobManager.getActiveMob(body.uniqueId).orElse(null)?.remove() }
+                if (body.isValid) body.remove()
+            }
+            if (immediate) remove.run() else Bukkit.getScheduler().runTaskLater(plugin, remove, 2L)
         }
         display?.remove()
         display = null

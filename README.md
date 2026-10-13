@@ -103,7 +103,17 @@ Then run:
 ./gradlew build -PapiDir=/path/to/that/folder
 ```
 
-The output is `build/libs/VysDragons-1.1.0.jar`. Kotlin is shaded in. SQLite comes from Paper.
+The output is `build/libs/VysDragons-1.2.0.jar`. Kotlin is shaded in. SQLite comes from Paper.
+
+## Config files
+
+- `plugins/VysDragons/config.yml`: gameplay (timers, heat rules, mob types, models,
+  health/damage, follow distances, animations).
+- `plugins/VysDragons/lang.yml`: every chat message, the `/dragons` menu (title, items,
+  names, lore), the egg hologram text, the dragon nameplate and stage names. MiniMessage
+  formatting. Keys missing from your copy fall back to the defaults.
+
+Apply edits to either file with `/vysdragons reload`.
 
 ## Data
 

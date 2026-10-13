@@ -6,8 +6,8 @@ import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Material
 import org.bukkit.configuration.file.FileConfiguration
 
-/** Typed read of config.yml. Rebuilt on /vysdragons reload. */
-class Settings(private val cfg: FileConfiguration, private val log: (String) -> Unit) {
+/** Typed read of config.yml (behavior) and lang.yml (all text and menu looks). Rebuilt on /vysdragons reload. */
+class Settings(private val cfg: FileConfiguration, private val lang: FileConfiguration, private val log: (String) -> Unit) {
 
     private val minuteMillis = 60_000L
     private val dayMillis = (cfg.getDouble("time.real-minutes-per-minecraft-day", 20.0) * minuteMillis).toLong()
@@ -34,8 +34,8 @@ class Settings(private val cfg: FileConfiguration, private val log: (String) -> 
     val eggCheckIntervalTicks = cfg.getLong("egg.check-interval-ticks", 20L).coerceAtLeast(1L)
     val eggDisplayEnabled = cfg.getBoolean("egg.display.enabled", true)
     val eggDisplayHeight = cfg.getDouble("egg.display.height", 0.9)
-    val eggDisplayWarming: String = cfg.getString("egg.display.warming", "")!!
-    val eggDisplayIdle: String = cfg.getString("egg.display.idle", "")!!
+    val eggDisplayWarming: String = lang.getString("egg-display.warming", "")!!
+    val eggDisplayIdle: String = lang.getString("egg-display.idle", "")!!
 
     // ---- dragon ----
     fun mobType(stage: DragonStage): String = cfg.getString("dragon.mob-types.${stage.key}", "")!!
@@ -70,31 +70,37 @@ class Settings(private val cfg: FileConfiguration, private val log: (String) -> 
     val quirkMinSeconds = cfg.getInt("dragon.animations.baby-quirk-min-seconds", 30).coerceAtLeast(1)
     val quirkMaxSeconds = cfg.getInt("dragon.animations.baby-quirk-max-seconds", 90).coerceAtLeast(quirkMinSeconds)
 
-    val nameplate: String = cfg.getString("dragon.nameplate", "")!!
-    fun stageName(stage: DragonStage): String = cfg.getString("dragon.stage-names.${stage.key}", stage.key)!!
+    // ---- lang.yml ----
+    val nameplate: String = lang.getString("nameplate", "")!!
+    fun stageName(stage: DragonStage): String = lang.getString("stage-names.${stage.key}", stage.key)!!
 
-    // ---- menu ----
-    val menuTitle: String = cfg.getString("menu.title", "Your Dragons")!!
-    val menuItemOut: Material = material("menu.item-out", Material.DRAGON_HEAD)
-    val menuItemStored: Material = material("menu.item-stored", Material.DRAGON_EGG)
-    val menuName: String = cfg.getString("menu.name", "%skin% Dragon")!!
-    val menuLoreOut: List<String> = cfg.getStringList("menu.lore-out")
-    val menuLoreStored: List<String> = cfg.getStringList("menu.lore-stored")
-    val menuGrowsIn: String = cfg.getString("menu.grows-in", "Grows up in %time%")!!
-    val menuFullyGrown: String = cfg.getString("menu.fully-grown", "Fully grown")!!
-    val menuSaddledYes: String = cfg.getString("menu.saddled-yes", "Yes")!!
-    val menuSaddledNo: String = cfg.getString("menu.saddled-no", "No")!!
-    val menuEmptyItem: Material = material("menu.empty-item", Material.BARRIER)
-    val menuEmptyName: String = cfg.getString("menu.empty-name", "No dragons yet")!!
+    val menuTitle: String = lang.getString("menu.title", "Your Dragons")!!
+    val menuItemOut: Material = material(lang, "menu.item-out", Material.DRAGON_HEAD)
+    val menuItemStored: Material = material(lang, "menu.item-stored", Material.DRAGON_EGG)
+    val menuName: String = lang.getString("menu.name", "%skin% Dragon")!!
+    val menuLoreOut: List<String> = lang.getStringList("menu.lore-out")
+    val menuLoreStored: List<String> = lang.getStringList("menu.lore-stored")
+    val menuGrowsIn: String = lang.getString("menu.grows-in", "Grows up in %time%")!!
+    val menuFullyGrown: String = lang.getString("menu.fully-grown", "Fully grown")!!
+    val menuSaddledYes: String = lang.getString("menu.saddled-yes", "Yes")!!
+    val menuSaddledNo: String = lang.getString("menu.saddled-no", "No")!!
+    val menuEmptyItem: Material = material(lang, "menu.empty-item", Material.BARRIER)
+    val menuEmptyName: String = lang.getString("menu.empty-name", "No dragons yet")!!
 
-    // ---- messages ----
-    private val prefix = cfg.getString("messages.prefix", "")!!
+    private val prefix = lang.getString("prefix", "")!!
 
+    /** Raw lang.yml text for messages.[key], with placeholders filled in. */
+    fun text(key: String, vararg replacements: Pair<String, String>): String =
+        format(lang.getString("messages.$key", key)!!, *replacements)
+
+    /** messages.[key] as a chat component, with the prefix. */
     fun message(key: String, vararg replacements: Pair<String, String>): Component =
-        MINI.deserialize(prefix + format(cfg.getString("messages.$key", key)!!, *replacements))
+        MINI.deserialize(prefix + text(key, *replacements))
 
-    private fun material(path: String, fallback: Material): Material {
-        val name = cfg.getString(path) ?: return fallback
+    private fun material(path: String, fallback: Material): Material = material(cfg, path, fallback)
+
+    private fun material(source: FileConfiguration, path: String, fallback: Material): Material {
+        val name = source.getString(path) ?: return fallback
         return Material.matchMaterial(name) ?: fallback.also { log("Unknown item '$name' at $path, using $fallback") }
     }
 

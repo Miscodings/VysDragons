@@ -35,12 +35,10 @@ egg:
     scan-radius: 2
   # How often (ticks) a loaded egg re-checks its heat.
   check-interval-ticks: 20
-  # Floating status text above a placed egg.
+  # Floating status text above a placed egg (the text itself is in lang.yml).
   display:
     enabled: true
     height: 0.9
-    warming: "<gold>Warming <white>%percent%% <gray>(%time% left)"
-    idle: "<gray>Idle <white>%percent%% <gray>- needs %count% heat blocks nearby"
 
 dragon:
   # MythicMobs mob type for each stage. The plugin attaches the ModelEngine model
@@ -49,10 +47,11 @@ dragon:
   #   caster.saddled  - "true"/"false"
   #   caster.element  - breath-element below (selects which breath skill fires)
   #   caster.state    - "ground"
-  # If young and adult use the same mob type, growing up swaps the model in place
-  # instead of respawning the mob.
+  # All stages share one mob type by default, so growing up swaps the model on the
+  # same mob instead of respawning it. (A baby can't use the mount/flight skills:
+  # it can never be saddled.) Different types per stage work too, but respawn on growth.
   mob-types:
-    baby: cksmp_dragon_baby
+    baby: cksmp_dragon_adult
     young: cksmp_dragon_adult
     adult: cksmp_dragon_adult
   # Optional MythicMobs skill cast on the mob right after its model is attached
@@ -138,61 +137,5 @@ dragon:
     baby-quirk-min-seconds: 30
     baby-quirk-max-seconds: 90
 
-  # Nameplate above every dragon. %owner%, %stage%. Empty to disable.
-  nameplate: "%owner%'s Dragon (%stage%)"
-  stage-names:
-    baby: Baby
-    young: Young
-    adult: Adult
-
-# /dragons - every dragon the player owns. Click a stored dragon to summon it to you
-# (any other dragon that's out is put away first), click one that's out to put it
-# away. Stored dragons keep growing. Placeholders: %skin%, %stage%, %growth%, %saddled%
-menu:
-  title: "<dark_purple>Your Dragons"
-  item-out: DRAGON_HEAD
-  item-stored: DRAGON_EGG
-  name: "<gold>%skin% Dragon <gray>(%stage%)"
-  lore-out:
-    - "<green>Out"
-    - "<gray>%growth%"
-    - "<gray>Saddled: <white>%saddled%"
-    - ""
-    - "<yellow>Click to put away"
-  lore-stored:
-    - "<aqua>Stored"
-    - "<gray>%growth%"
-    - "<gray>Saddled: <white>%saddled%"
-    - ""
-    - "<yellow>Click to summon"
-  grows-in: "Grows up in <white>%time%"
-  fully-grown: "Fully grown"
-  saddled-yes: "Yes"
-  saddled-no: "No"
-  empty-item: BARRIER
-  empty-name: "<red>You don't have any dragons yet"
-
-messages:
-  prefix: "<dark_purple>[Dragons]</dark_purple> "
-  egg-placed: "<gray>Egg placed. Surround it with <gold>%count%</gold> heat blocks (fire, lava, magma, campfires) to incubate it."
-  egg-place-failed: "<red>That egg couldn't be placed. Tell an admin (check the console)."
-  egg-picked-up: "<gray>You picked the egg back up. Its warmth is kept."
-  egg-hatched: "<gold>Your dragon egg hatched!</gold> <gray>Your baby dragon will follow you around."
-  grew-young: "<gold>Your dragon has grown into a young dragon!</gold> <gray>Saddle it to ride."
-  grew-adult: "<gold>Your dragon is fully grown!</gold> <gray>It can now carry a passenger."
-  died: "<red>Your dragon has died."
-  sitting: "<gray>Your dragon sits."
-  following: "<gray>Your dragon follows you."
-  saddled: "<green>Saddled! Right-click to ride."
-  unsaddled: "<gray>Saddle removed."
-  too-young-to-saddle: "<red>Your dragon is too young for a saddle."
-  needs-saddle: "<yellow>Your dragon needs a saddle before you can ride it."
-  not-your-dragon: "<red>That isn't your dragon."
-  seat-taken: "<red>The passenger seat is taken."
-  give-success: "<green>Gave %amount% dragon egg(s) to %player%."
-  give-failed: "<red>Nexo item '%item%' doesn't exist."
-  summoned: "<green>Your dragon appears!"
-  stored: "<gray>Your dragon has been put away."
-  cant-while-ridden: "<red>Get off your dragon first."
-  summon-failed: "<red>Your dragon couldn't be summoned here. Tell an admin (check the console)."
-  reloaded: "<green>VysDragons config reloaded."
+# All messages, menu looks, the egg hologram text, nameplates and stage names are in
+# lang.yml.

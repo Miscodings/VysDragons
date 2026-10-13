@@ -112,26 +112,31 @@ class Dragon(
         return true
     }
 
-    /** Removes the body (chunk unload, shutdown, respawn). Position is captured first. */
-    fun deactivate() {
+    /**
+     * Removes the body (chunk unload, shutdown, respawn). Position is captured first.
+     * [immediate] skips the two-tick grace; only for shutdown, when tasks no longer run.
+     */
+    fun deactivate(immediate: Boolean = false) {
         val body = entity ?: return
         capturePosition(body)
         entity = null
         spawnedMobType = null
         plugin.dragons.unindexEntity(body.uniqueId)
-        destroyBody(body)
+        destroyBody(body, immediate)
     }
 
-    private fun destroyBody(body: LivingEntity) {
-        runCatching {
-            ModelEngineAPI.getModeledEntity(body.uniqueId)?.let { modeled ->
-                modeled.models.values.forEach { Mounts.of(it)?.dismountAll() }
-                modeled.destroy()
-            }
-            ModelEngineAPI.removeModeledEntity(body.uniqueId)
-        }.onFailure { plugin.logger.warning("ModelEngine cleanup failed for dragon $uuid: ${it.message}") }
-        runCatching { MythicBukkit.inst().mobManager.getActiveMob(body.uniqueId).orElse(null)?.remove() }
-        if (body.isValid) body.remove()
+    private fun destroyBody(body: LivingEntity, immediate: Boolean) {
+        runCatching { destroyModels(body) }
+            .onFailure { plugin.logger.warning("ModelEngine cleanup failed for dragon $uuid: ${it.message}") }
+        // Removing the body in the same tick can stop ModelEngine from telling players the
+        // model is gone, leaving a frozen copy behind. Give it two ticks to send that first.
+        val remove = Runnable {
+            runCatching { MythicBukkit.inst().mobManager.getActiveMob(body.uniqueId).orElse(null)?.remove() }
+            if (body.isValid) body.remove()
+        }
+        if (immediate) return remove.run()
+        body.isInvisible = true
+        Bukkit.getScheduler().runTaskLater(plugin, remove, 2L)
     }
 
     /** Model, attributes and MythicMobs variables for the current stage/saddle state. */
@@ -182,7 +187,8 @@ class Dragon(
         val modeled = ModelEngineAPI.getOrCreateModeledEntity(body)
         modeled.setSaved(false)
         modeled.setBaseEntityVisible(false)
-        modeled.models.keys.toList().forEach { modeled.removeModel(it) }
+        // removeModel only detaches the model; destroy() is what removes it for players.
+        modeled.models.keys.toList().forEach { id -> modeled.removeModel(id).ifPresent { it.destroy() } }
 
         if (ModelEngineAPI.getBlueprint(modelId) == null) {
             plugin.logger.warning("ModelEngine model '$modelId' doesn't exist (dragon $uuid)")
@@ -209,6 +215,15 @@ class Dragon(
         )
         body.customName(Settings.MINI.deserialize(text))
         body.isCustomNameVisible = true
+    }
+
+    /** Dismounts riders and destroys every ModelEngine model on [body], then its ModeledEntity. */
+    private fun destroyModels(body: LivingEntity) {
+        val modeled = ModelEngineAPI.getModeledEntity(body.uniqueId) ?: return
+        modeled.models.values.forEach { Mounts.of(it)?.dismountAll() }
+        modeled.models.keys.toList().forEach { id -> modeled.removeModel(id).ifPresent { it.destroy() } }
+        modeled.destroy()
+        ModelEngineAPI.removeModeledEntity(body.uniqueId)
     }
 
     // ==================== ticking ====================

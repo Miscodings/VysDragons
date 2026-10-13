@@ -47,7 +47,7 @@ class DragonManager(private val plugin: VysDragons) {
         tickTask?.cancel()
         saveTask?.cancel()
         dragons.values.forEach {
-            it.deactivate()
+            it.deactivate(immediate = true)
             it.save()
         }
         dragons.clear()

@@ -1,0 +1,96 @@
+# VysDragons text and menu looks. Everything uses MiniMessage formatting
+# (https://docs.advntr.dev/minimessage/format.html), e.g. <gold>, <bold>, <#ff8800>,
+# <gradient:#ff5e1a:#ffc23d>. Apply changes with /vysdragons reload.
+
+# Put in front of every chat message. Empty for none.
+prefix: "<dark_purple>[Dragons]</dark_purple> "
+
+# Name shown for each stage in %stage%.
+stage-names:
+  baby: Baby
+  young: Young
+  adult: Adult
+
+# Nameplate above every dragon. %owner%, %stage%. Empty to hide it.
+nameplate: "%owner%'s Dragon (%stage%)"
+
+# Floating text above a placed egg. %percent%, %time% (heated time left), %count%
+# (heat blocks needed).
+egg-display:
+  warming: "<gold>Warming <white>%percent%% <gray>(%time% left)"
+  idle: "<gray>Idle <white>%percent%% <gray>- needs %count% heat blocks nearby"
+
+# /dragons menu. One icon per dragon; the menu grows to fit (up to 6 rows).
+# Placeholders in name and lore: %skin%, %stage%, %growth%, %saddled%
+menu:
+  title: "<dark_purple>Your Dragons"
+  # Any item name from https://jd.papermc.io/paper/1.21.11/org/bukkit/Material.html
+  item-out: DRAGON_HEAD
+  item-stored: DRAGON_EGG
+  name: "<gold>%skin% Dragon <gray>(%stage%)"
+  lore-out:
+    - "<green>Out"
+    - "<gray>%growth%"
+    - "<gray>Saddled: <white>%saddled%"
+    - ""
+    - "<yellow>Click to put away"
+  lore-stored:
+    - "<aqua>Stored"
+    - "<gray>%growth%"
+    - "<gray>Saddled: <white>%saddled%"
+    - ""
+    - "<yellow>Click to summon"
+  # %growth% is one of these two. %time% is the time until the next stage.
+  grows-in: "Grows up in <white>%time%"
+  fully-grown: "Fully grown"
+  # %saddled% is one of these two.
+  saddled-yes: "Yes"
+  saddled-no: "No"
+  # Shown alone when the player has no dragons.
+  empty-item: BARRIER
+  empty-name: "<red>You don't have any dragons yet"
+
+messages:
+  # Eggs
+  egg-placed: "<gray>Egg placed. Surround it with <gold>%count%</gold> heat blocks (fire, lava, magma, campfires) to incubate it."
+  egg-place-failed: "<red>That egg couldn't be placed. Tell an admin (check the console)."
+  egg-picked-up: "<gray>You picked the egg back up. Its warmth is kept."
+  egg-hatched: "<gold>Your dragon egg hatched!</gold> <gray>Your baby dragon will follow you around."
+
+  # Growing up and dying
+  grew-young: "<gold>Your dragon has grown into a young dragon!</gold> <gray>Saddle it to ride."
+  grew-adult: "<gold>Your dragon is fully grown!</gold> <gray>It can now carry a passenger."
+  died: "<red>Your dragon has died."
+
+  # Interacting
+  sitting: "<gray>Your dragon sits."
+  following: "<gray>Your dragon follows you."
+  saddled: "<green>Saddled! Right-click to ride."
+  unsaddled: "<gray>Saddle removed."
+  too-young-to-saddle: "<red>Your dragon is too young for a saddle."
+  needs-saddle: "<yellow>Your dragon needs a saddle before you can ride it."
+  not-your-dragon: "<red>That isn't your dragon."
+  seat-taken: "<red>The passenger seat is taken."
+
+  # /dragons
+  summoned: "<green>Your dragon appears!"
+  stored: "<gray>Your dragon has been put away."
+  cant-while-ridden: "<red>Get off your dragon first."
+  summon-failed: "<red>Your dragon couldn't be summoned here. Tell an admin (check the console)."
+
+  # /vysdragons (admin)
+  usage: "<gray>/%label% <give <player> [amount]|reload|info|grow>"
+  player-not-found: "<red>Player not found."
+  players-only: "<red>Only players can use that."
+  no-target: "<red>Look at a dragon or egg (or stand next to one)."
+  give-success: "<green>Gave %amount% dragon egg(s) to %player%."
+  give-failed: "<red>Nexo item '%item%' doesn't exist."
+  reloaded: "<green>VysDragons config and lang reloaded."
+  # %uuid%, %owner%, %skin%, %stage%, %next%, %saddled%, %stored%
+  info-dragon: "<gray>Dragon <white>%uuid%</white> | owner <white>%owner%</white> | skin <white>%skin%</white> | stage <white>%stage%</white> | next stage in <white>%next%</white> | saddled <white>%saddled%</white>"
+  info-fully-grown: "fully grown"
+  # %heated% (true/false), %time% (heated time still needed)
+  info-egg: "<gray>Egg heated <white>%heated%</white>, hatches after <white>%time%</white> more heat"
+  grow-dragon: "<green>It will grow on the next tick."
+  grow-already-adult: "<red>That dragon is already an adult."
+  grow-egg: "<green>Hatched."
