@@ -122,3 +122,11 @@ runs/
 # Local licensed plugin APIs and deployment configuration
 /deployment-apis/
 /deployment-private/
+
+# Third-party server assets: never commit (paid/licensed or owned by the server).
+# MythicMobs/ModelEngine/Nexo configs, ModelEngine blueprints and plugin jars.
+/configs/
+*.bbmodel
+/MythicMobs/
+/ModelEngine/
+/Nexo/
