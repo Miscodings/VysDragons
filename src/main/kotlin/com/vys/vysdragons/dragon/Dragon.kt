@@ -136,7 +136,7 @@ class Dragon(
 
     /** Model, attributes and MythicMobs variables for the current stage/saddle state. */
     private fun applyStage(activeMob: ActiveMob, body: LivingEntity, heal: Boolean) {
-        val modelId = settings.modelId(skin, stage, saddled)
+        val modelId = resolveModelId()
 
         body.getAttribute(Attribute.MAX_HEALTH)?.baseValue = settings.maxHealth(stage)
         body.getAttribute(Attribute.ATTACK_DAMAGE)?.baseValue = settings.attackDamage(stage)
@@ -163,6 +163,19 @@ class Dragon(
         updateNameplate(body)
         // ModelEngine finishes attaching on its next tick; animations sent before that are lost.
         if (sitting) later(5L) { playAnimation(settings.sitAnimation, loop = true) }
+    }
+
+    /**
+     * The saddled model if it exists, else the plain one. No young_saddled models exist
+     * yet, and a missing model would leave the dragon invisible.
+     */
+    private fun resolveModelId(): String {
+        val plain = settings.modelId(skin, stage, saddled = false)
+        if (!saddled || !stage.rideable) return plain
+        val saddledId = settings.modelId(skin, stage, saddled = true)
+        if (ModelEngineAPI.getBlueprint(saddledId) != null) return saddledId
+        plugin.logger.warning("Saddled model '$saddledId' doesn't exist, using '$plain' for dragon $uuid")
+        return plain
     }
 
     private fun attachModel(body: LivingEntity, modelId: String) {
