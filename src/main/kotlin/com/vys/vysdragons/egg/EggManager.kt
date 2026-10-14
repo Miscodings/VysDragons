@@ -39,6 +39,7 @@ class EggManager(private val plugin: VysDragons) {
         val now = System.currentTimeMillis()
         eggs.values.toList().forEach { egg ->
             // Respawns a body that vanished while its chunk stayed loaded.
+            if (egg.hatching) return@forEach
             if (!egg.isActive && !egg.activate()) return@forEach
             val wasHeated = egg.heated
             if (egg.tick(now)) hatch(egg)
@@ -62,9 +63,9 @@ class EggManager(private val plugin: VysDragons) {
      * Places an egg for [owner]; [progressMillis] is carried over from a picked-up egg
      * item. Null if the egg mob couldn't be spawned (nothing is stored then).
      */
-    fun place(owner: UUID, location: Location, progressMillis: Long): DragonEgg? {
+    fun place(owner: UUID, location: Location, skin: String, progressMillis: Long): DragonEgg? {
         val egg = DragonEgg(
-            UUID.randomUUID(), owner, location.world.name, location.x, location.y, location.z,
+            UUID.randomUUID(), owner, location.world.name, location.x, location.y, location.z, skin,
             progressMillis, heated = false, checkedAt = System.currentTimeMillis(),
         )
         if (!egg.activate()) return null
@@ -75,13 +76,15 @@ class EggManager(private val plugin: VysDragons) {
     }
 
     /** A player hit the egg: remove it and drop the egg item, keeping its progress. */
-    fun pickUp(egg: DragonEgg) {
+    fun pickUp(egg: DragonEgg): Boolean {
+        if (egg.hatching) return false
         val loc = egg.entity?.location ?: egg.location()
         egg.tick(System.currentTimeMillis())
         remove(egg)
-        val item = createItem(1, egg.progressMillis) ?: return
-        val dropped = loc?.let { it.world.dropItemNaturally(it, item) } ?: return
+        val item = createItem(egg.skin, 1, egg.progressMillis) ?: return true
+        val dropped = loc?.let { it.world.dropItemNaturally(it, item) } ?: return true
         if (egg.progressMillis > 0L) droppedProgress[dropped.uniqueId] = egg.progressMillis
+        return true
     }
 
     /**
@@ -104,16 +107,41 @@ class EggManager(private val plugin: VysDragons) {
     fun forceHatch(egg: DragonEgg) = hatch(egg)
 
     private fun hatch(egg: DragonEgg) {
+        if (egg.hatching) return
         val loc = egg.location() ?: return
+        val settings = plugin.settings
+        // The egg stays registered (and saved) while it cracks, so a restart mid-animation
+        // just hatches it again. The dragon appears partway through, the shell goes after.
+        if (egg.isActive && egg.startHatching()) {
+            Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+                if (eggs[egg.uuid] !== egg) return@Runnable
+                remove(egg, immediate = false)
+                spawnDragon(egg, loc)
+            }, settings.eggHatchSpawnTicks)
+            return
+        }
         remove(egg)
-        plugin.dragons.hatch(egg.owner, loc)
+        spawnDragon(egg, loc)
+    }
+
+    private fun spawnDragon(egg: DragonEgg, loc: Location) {
+        plugin.dragons.hatch(egg.owner, loc, egg.skin)
         Bukkit.getPlayer(egg.owner)?.sendMessage(plugin.settings.message("egg-hatched"))
     }
 
-    fun remove(egg: DragonEgg) {
-        egg.deactivate()
+    /**
+     * Forgets [egg]. A hatching egg keeps its shell on screen ([immediate] false) until the
+     * hatch animation is done, then the shell goes.
+     */
+    fun remove(egg: DragonEgg, immediate: Boolean = true) {
         eggs.remove(egg.uuid)
         plugin.db.deleteEgg(egg.uuid)
+        if (immediate || !egg.hatching) {
+            egg.deactivate()
+            return
+        }
+        val wait = (plugin.settings.eggHatchRemoveTicks - plugin.settings.eggHatchSpawnTicks).coerceAtLeast(1L)
+        Bukkit.getScheduler().runTaskLater(plugin, Runnable { egg.deactivate() }, wait)
     }
 
     fun byEntity(entityId: UUID): DragonEgg? = byEntity[entityId]
@@ -144,9 +172,9 @@ class EggManager(private val plugin: VysDragons) {
 
     // ==================== item ====================
 
-    /** The configured Nexo egg item, with [progressMillis] stamped on if non-zero. */
-    fun createItem(amount: Int, progressMillis: Long = 0L): ItemStack? {
-        val item = NexoItems.itemFromId(plugin.settings.eggItemId)?.build() ?: return null
+    /** The Nexo egg item for [skin], with [progressMillis] stamped on if non-zero. */
+    fun createItem(skin: String, amount: Int, progressMillis: Long = 0L): ItemStack? {
+        val item = NexoItems.itemFromId(plugin.settings.eggItemId(skin))?.build() ?: return null
         item.amount = amount
         if (progressMillis > 0L) {
             item.editMeta { it.persistentDataContainer.set(VysDragons.EGG_PROGRESS_KEY, PersistentDataType.LONG, progressMillis) }
@@ -154,15 +182,26 @@ class EggManager(private val plugin: VysDragons) {
         return item
     }
 
-    fun isEggItem(item: ItemStack?): Boolean =
-        item != null && !item.type.isAir && NexoItems.idFromItem(item).equals(plugin.settings.eggItemId, ignoreCase = true)
+    /** True for the per-skin egg items and for the old untyped one (which hatches a random skin). */
+    fun isEggItem(item: ItemStack?): Boolean {
+        if (item == null || item.type.isAir) return false
+        val id = NexoItems.idFromItem(item) ?: return false
+        return id.equals(plugin.settings.eggItemId, ignoreCase = true) || plugin.settings.skinOfEggItem(id) != null
+    }
+
+    /** The skin of an egg item; a random one for the old untyped item. */
+    fun skinOf(item: ItemStack): String =
+        plugin.settings.skinOfEggItem(NexoItems.idFromItem(item)) ?: plugin.settings.skins.random()
 
     fun progressOf(item: ItemStack): Long =
         item.persistentDataContainer.get(VysDragons.EGG_PROGRESS_KEY, PersistentDataType.LONG) ?: 0L
 
-    fun give(player: Player, amount: Int): Boolean {
-        val item = createItem(amount) ?: return false
-        player.inventory.addItem(item).values.forEach { player.world.dropItemNaturally(player.location, it) }
+    /** Gives [amount] eggs of [skin], or of a random skin each when [skin] is null. */
+    fun give(player: Player, amount: Int, skin: String?): Boolean {
+        repeat(amount) {
+            val item = createItem(skin ?: plugin.settings.skins.random(), 1) ?: return false
+            player.inventory.addItem(item).values.forEach { player.world.dropItemNaturally(player.location, it) }
+        }
         return true
     }
 }

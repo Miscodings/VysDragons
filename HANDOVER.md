@@ -32,6 +32,17 @@ Optional:
 - `land` is about half of each adult model (baked to ~6,400 keyframes). Re-exporting it
   with fewer keyframes would shrink the resource pack a lot.
 
+## Egg types (1.3.0)
+
+Every skin has its own egg: Nexo item `dragon_egg_<skin>`, MythicMobs mob `dragon_egg_<skin>`
+(`Mobs/VysDragons/eggs_skins.yml`), ModelEngine model `dragon_egg_<skin>` in
+`blueprints/vysdragons/egg/`, and an item model/texture in the Nexo pack. The egg hatches
+into that skin. `/vd give <player> [type] [amount]`, no type = random. `black_and_red` and
+`red_and_black` share the red egg texture. The old `dragon_egg_fire` item/mob stay for
+eggs from before; they roll a random skin when placed (DB column `eggs.skin`).
+Egg models only keep two animations: `warm` (loops while heated) and `hatch` (plays on
+hatching; the baby spawns at 60 ticks, the shell goes at 100, see `egg.animations`).
+
 ## What's in this repo, and what isn't
 
 Only the plugin's own source and default `config.yml` / `lang.yml`. **Nothing from

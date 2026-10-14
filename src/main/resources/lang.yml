@@ -89,18 +89,20 @@ messages:
   summon-failed: "<#FF6B6B>Your dragon couldn't be summoned here. Tell an admin.</#FF6B6B>"
 
   # /vysdragons (admin)
-  usage: "<#C9C3D9>/%label% <#FFC46B>give</#FFC46B> <#8A8499><player> [amount]</#8A8499> · <#FFC46B>reload</#FFC46B> · <#FFC46B>info</#FFC46B> · <#FFC46B>grow</#FFC46B></#C9C3D9>"
+  usage: "<#C9C3D9>/%label% <#FFC46B>give</#FFC46B> <#8A8499><player> [type] [amount]</#8A8499> · <#FFC46B>reload</#FFC46B> · <#FFC46B>info</#FFC46B> · <#FFC46B>grow</#FFC46B></#C9C3D9>"
   player-not-found: "<#FF6B6B>Player not found.</#FF6B6B>"
   players-only: "<#FF6B6B>Only players can use that.</#FF6B6B>"
   no-target: "<#FF6B6B>Look at a dragon or egg, or stand next to one.</#FF6B6B>"
   give-success: "<#7CE3A1>Gave <#FFC46B>%amount%</#FFC46B> dragon egg(s) to <#FFC46B>%player%</#FFC46B>.</#7CE3A1>"
+  # %type%
+  unknown-type: "<#FF6B6B>Unknown egg type <#FFC46B>%type%</#FFC46B>. Use tab-complete, or <#FFC46B>random</#FFC46B>.</#FF6B6B>"
   give-failed: "<#FF6B6B>Nexo item <#FFC46B>%item%</#FFC46B> doesn't exist.</#FF6B6B>"
   reloaded: "<#7CE3A1>Config and lang reloaded.</#7CE3A1>"
   # %uuid%, %owner%, %skin%, %stage%, %next%, %saddled%, %stored%
   info-dragon: "<#C9C3D9><#FFC46B>%owner%</#FFC46B>'s <#FFC46B>%skin%</#FFC46B> · %stage% · next stage in <#FFC46B>%next%</#FFC46B> · saddled <#FFC46B>%saddled%</#FFC46B> <#8A8499>(%uuid%)</#8A8499></#C9C3D9>"
   info-fully-grown: "fully grown"
-  # %heated% (true/false), %time% (heated time still needed)
-  info-egg: "<#C9C3D9>Egg · heated <#FFC46B>%heated%</#FFC46B> · hatches after <#FFC46B>%time%</#FFC46B> more heat</#C9C3D9>"
+  # %skin%, %heated% (true/false), %time% (heated time still needed)
+  info-egg: "<#C9C3D9>Egg · <#FFC46B>%skin%</#FFC46B> · heated <#FFC46B>%heated%</#FFC46B> · hatches after <#FFC46B>%time%</#FFC46B> more heat</#C9C3D9>"
   grow-dragon: "<#7CE3A1>It will grow on the next tick.</#7CE3A1>"
   grow-already-adult: "<#FF6B6B>That dragon is already an adult.</#FF6B6B>"
   grow-egg: "<#7CE3A1>Hatched.</#7CE3A1>"

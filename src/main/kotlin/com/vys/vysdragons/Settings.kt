@@ -26,12 +26,19 @@ class Settings(private val cfg: FileConfiguration, private val lang: FileConfigu
     // ---- egg ----
     val eggItemId: String = cfg.getString("egg.nexo-item", "dragon_egg_fire")!!
     val eggMobType: String = cfg.getString("egg.mob-type", "dragon_egg_fire")!!
+    private val eggItemPattern = cfg.getString("egg.nexo-item-pattern", "dragon_egg_%skin%")!!
+    private val eggMobPattern = cfg.getString("egg.mob-type-pattern", "dragon_egg_%skin%")!!
     val heatBlocks: Set<Material> = cfg.getStringList("egg.heat.blocks").mapNotNull { name ->
         Material.matchMaterial(name) ?: null.also { log("Unknown heat block '$name' in config.yml") }
     }.toSet()
     val heatRequiredCount = cfg.getInt("egg.heat.required-count", 8).coerceAtLeast(1)
     val heatScanRadius = cfg.getInt("egg.heat.scan-radius", 2).coerceIn(0, 8)
     val eggCheckIntervalTicks = cfg.getLong("egg.check-interval-ticks", 20L).coerceAtLeast(1L)
+    // Egg model animations (names in the egg bbmodels) and hatching timings.
+    val eggWarmAnimation: String = cfg.getString("egg.animations.warm", "warm")!!
+    val eggHatchAnimation: String = cfg.getString("egg.animations.hatch", "hatch")!!
+    val eggHatchSpawnTicks = cfg.getLong("egg.animations.hatch-spawn-after-ticks", 60L).coerceAtLeast(0L)
+    val eggHatchRemoveTicks = cfg.getLong("egg.animations.hatch-remove-after-ticks", 100L).coerceAtLeast(eggHatchSpawnTicks)
     val eggDisplayEnabled = cfg.getBoolean("egg.display.enabled", true)
     val eggDisplayHeight = cfg.getDouble("egg.display.height", 0.9)
     val eggDisplayWarming: String = lang.getString("egg-display.warming", "")!!
@@ -45,6 +52,22 @@ class Settings(private val cfg: FileConfiguration, private val lang: FileConfigu
     val skins: List<String> = cfg.getStringList("dragon.skins").ifEmpty { listOf("scarlet_black") }
     private val modelPattern = cfg.getString("dragon.model", "robust_dragon_%skin%_%stage%")!!
     private val saddledModelPattern = cfg.getString("dragon.saddled-model", "robust_dragon_%skin%_%stage%_saddled")!!
+
+    /** Nexo item id of the egg for [skin]. */
+    fun eggItemId(skin: String): String = eggItemPattern.replace("%skin%", skin)
+
+    /** MythicMobs mob type of the placed egg for [skin]. */
+    fun eggMobType(skin: String): String = eggMobPattern.replace("%skin%", skin)
+
+    /** The skin an egg item id belongs to; null if it isn't a (skinned) egg item. */
+    fun skinOfEggItem(itemId: String?): String? =
+        itemId?.let { id -> skins.firstOrNull { eggItemId(it).equals(id, ignoreCase = true) } }
+
+    /** Resolves a typed skin name (case and dash insensitive) to a configured skin. */
+    fun matchSkin(input: String): String? {
+        val key = input.lowercase().replace('-', '_').replace(' ', '_')
+        return skins.firstOrNull { it == key }
+    }
 
     fun modelId(skin: String, stage: DragonStage, saddled: Boolean): String =
         (if (saddled && stage.rideable) saddledModelPattern else modelPattern)

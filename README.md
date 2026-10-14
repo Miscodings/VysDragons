@@ -38,7 +38,7 @@ dragons keep growing. You can't summon or store while someone is riding.
 
 ### Admin commands (`vysdragons.admin`, op by default)
 
-- `/vysdragons give <player> [amount]`: give egg items.
+- `/vysdragons give <player> [type] [amount]`: give egg items. `type` is a skin name (tab-completes) or `random`; leave it out for a random egg each. `/vd give <player> 3` still works.
 - `/vysdragons reload`: reload `config.yml`. Model/mob changes apply to dragons the next time they respawn.
 - `/vysdragons info`: show stage and time left for the dragon or egg you're looking at.
 - `/vysdragons grow`: finish the current stage (dragon) or hatch now (egg) for the thing you're looking at. Meant for testing.
@@ -55,10 +55,10 @@ Alias: `/vd`.
 The plugin only references these by name, and every name can be changed in `config.yml`.
 
 **Nexo**
-- `egg.nexo-item` (default `dragon_egg_fire`): the egg item.
+- `egg.nexo-item-pattern` (default `dragon_egg_%skin%`): one egg item per entry in `dragon.skins`. `egg.nexo-item` (`dragon_egg_fire`) is the old untyped egg; placing one rolls a random skin.
 
 **MythicMobs mobs**
-- `egg.mob-type` (default `dragon_egg_fire`): the placed egg. It attaches its own model
+- `egg.mob-type-pattern` (default `dragon_egg_%skin%`): the placed egg, one per skin; `egg.mob-type` (`dragon_egg_fire`) is the old untyped one. Each attaches its own model
   (e.g. `model{...}` on `~onSpawn`/`~onLoad`). `Type: WOLF` is recommended, because tamed
   wolves never despawn.
 - `dragon.mob-types.baby|young|adult` (default `cksmp_dragon_adult` for all three): the dragon
@@ -115,7 +115,7 @@ Then run:
 ./gradlew build -PapiDir=/path/to/that/folder
 ```
 
-The output is `build/libs/VysDragons-1.2.0.jar`. Kotlin is shaded in. SQLite comes from Paper.
+The output is `build/libs/VysDragons-1.3.0.jar`. Kotlin is shaded in. SQLite comes from Paper.
 
 ## Config files
 

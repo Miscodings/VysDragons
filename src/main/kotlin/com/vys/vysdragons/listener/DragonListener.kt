@@ -76,7 +76,7 @@ class DragonListener(private val plugin: VysDragons) : Listener {
         event.isCancelled = true
 
         val target = block.getRelative(event.blockFace).location.add(0.5, 0.0, 0.5)
-        if (plugin.eggs.place(event.player.uniqueId, target, plugin.eggs.progressOf(item)) == null) {
+        if (plugin.eggs.place(event.player.uniqueId, target, plugin.eggs.skinOf(item), plugin.eggs.progressOf(item)) == null) {
             event.player.sendMessage(settings.message("egg-place-failed"))
             return
         }
@@ -91,8 +91,7 @@ class DragonListener(private val plugin: VysDragons) : Listener {
         event.isCancelled = true
         val damager = (event as? EntityDamageByEntityEvent)?.damager
         val player = damager as? Player ?: (damager as? Projectile)?.shooter as? Player ?: return
-        plugin.eggs.pickUp(egg)
-        player.sendMessage(settings.message("egg-picked-up"))
+        if (plugin.eggs.pickUp(egg)) player.sendMessage(settings.message("egg-picked-up"))
     }
 
     /**
@@ -107,8 +106,7 @@ class DragonListener(private val plugin: VysDragons) : Listener {
         val player = event.player
         Bukkit.getScheduler().runTask(plugin, Runnable {
             val egg = plugin.eggs.byEntity(entityId) ?: return@Runnable
-            plugin.eggs.pickUp(egg)
-            player.sendMessage(settings.message("egg-picked-up"))
+            if (plugin.eggs.pickUp(egg)) player.sendMessage(settings.message("egg-picked-up"))
         })
     }
 

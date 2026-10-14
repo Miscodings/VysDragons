@@ -6,6 +6,7 @@ import com.vys.vysdragons.data.EggRow
 import com.vys.vysdragons.util.SpawnBypass
 import com.vys.vysdragons.util.formatDuration
 import com.ticxo.modelengine.api.ModelEngineAPI
+import com.ticxo.modelengine.api.animation.BlueprintAnimation
 import io.lumine.mythic.bukkit.BukkitAdapter
 import io.lumine.mythic.bukkit.MythicBukkit
 import org.bukkit.Bukkit
@@ -31,6 +32,7 @@ class DragonEgg(
     val x: Double,
     val y: Double,
     val z: Double,
+    val skin: String,
     progressMillis: Long,
     heated: Boolean,
     checkedAt: Long,
@@ -40,6 +42,10 @@ class DragonEgg(
     var heated = heated
         private set
     private var checkedAt = checkedAt
+
+    /** True while the hatch animation plays; the egg is already spent and ignores everything. */
+    var hatching = false
+        private set
 
     var entity: Entity? = null
         private set
@@ -57,9 +63,9 @@ class DragonEgg(
         val loc = location() ?: return false
         if (!loc.world.isChunkLoaded(loc.blockX shr 4, loc.blockZ shr 4)) return false
 
-        val mythicMob = MythicBukkit.inst().mobManager.getMythicMob(settings.eggMobType).orElse(null)
+        val mythicMob = MythicBukkit.inst().mobManager.getMythicMob(settings.eggMobType(skin)).orElse(null)
         if (mythicMob == null) {
-            plugin.logger.warning("MythicMobs mob '${settings.eggMobType}' not found - egg $uuid can't spawn")
+            plugin.logger.warning("MythicMobs mob '${settings.eggMobType(skin)}' not found - egg $uuid can't spawn")
             return false
         }
         val activeMob = SpawnBypass.run { mythicMob.spawn(BukkitAdapter.adapt(loc), 1.0) }
@@ -79,6 +85,8 @@ class DragonEgg(
         body.persistentDataContainer.set(VysDragons.EGG_KEY, PersistentDataType.STRING, uuid.toString())
         entity = body
         plugin.eggs.indexEntity(body.uniqueId, this)
+        // ModelEngine finishes attaching on its next tick; animations sent before that are lost.
+        Bukkit.getScheduler().runTaskLater(plugin, Runnable { syncWarmAnimation() }, 10L)
 
         if (settings.eggDisplayEnabled) {
             display = loc.world.spawn(loc.clone().add(0.0, settings.eggDisplayHeight, 0.0), TextDisplay::class.java) {
@@ -116,11 +124,40 @@ class DragonEgg(
 
     /** Credits time since the last check, then re-checks heat. True once ready to hatch. */
     fun tick(now: Long): Boolean {
+        val wasHeated = heated
         if (heated) progressMillis += (now - checkedAt).coerceAtLeast(0L)
         checkedAt = now
         location()?.let { heated = countHeat(it) >= settings.heatRequiredCount }
+        if (heated != wasHeated) syncWarmAnimation()
         refreshDisplay()
         return progressMillis >= settings.eggHatchMillis
+    }
+
+    private fun activeModel() =
+        entity?.let { ModelEngineAPI.getModeledEntity(it.uniqueId)?.models?.values?.firstOrNull() }
+
+    /** The model's `warm` loop plays while the egg is heated. */
+    private fun syncWarmAnimation() {
+        if (hatching) return
+        val name = settings.eggWarmAnimation
+        if (name.isBlank()) return
+        val handler = activeModel()?.animationHandler ?: return
+        if (heated) handler.playAnimation(name, 0.2, 0.2, 1.0, true)?.setForceOverride(BlueprintAnimation.OverrideMode.OVERRIDE)
+        else handler.stopAnimation(name)
+    }
+
+    /** Starts the hatch animation. False if the egg isn't spawned or has no such animation. */
+    fun startHatching(): Boolean {
+        val name = settings.eggHatchAnimation
+        val handler = activeModel()?.animationHandler ?: return false
+        if (name.isBlank()) return false
+        handler.stopAnimation(settings.eggWarmAnimation)
+        val playing = handler.playAnimation(name, 0.0, 0.0, 1.0, true) ?: return false
+        playing.setForceOverride(BlueprintAnimation.OverrideMode.OVERRIDE)
+        hatching = true
+        display?.remove()
+        display = null
+        return true
     }
 
     private fun countHeat(center: Location): Int {
@@ -140,6 +177,7 @@ class DragonEgg(
     }
 
     private fun refreshDisplay() {
+        if (hatching) return
         val textDisplay = display ?: return
         val hatchMillis = settings.eggHatchMillis.coerceAtLeast(1L)
         val percent = (progressMillis * 100 / hatchMillis).coerceIn(0, 100)
@@ -155,11 +193,12 @@ class DragonEgg(
 
     fun save() = plugin.db.saveEgg(toRow())
 
-    fun toRow() = EggRow(uuid, owner, world, x, y, z, progressMillis, heated, checkedAt)
+    fun toRow() = EggRow(uuid, owner, world, x, y, z, progressMillis, heated, checkedAt, skin)
 
     companion object {
         fun fromRow(row: EggRow) = DragonEgg(
-            row.uuid, row.owner, row.world, row.x, row.y, row.z, row.progressMillis, row.heated, row.checkedAt,
+            row.uuid, row.owner, row.world, row.x, row.y, row.z, row.skin ?: VysDragons.instance.settings.skins.random(),
+            row.progressMillis, row.heated, row.checkedAt,
         )
     }
 }

@@ -54,12 +54,12 @@ class DragonManager(private val plugin: VysDragons) {
         byEntity.clear()
     }
 
-    /** Creates a fresh baby at [location] for [owner], e.g. from a hatched egg. */
-    fun hatch(owner: UUID, location: Location): Dragon {
+    /** Creates a fresh baby of [skin] at [location] for [owner], e.g. from a hatched egg. */
+    fun hatch(owner: UUID, location: Location, skin: String): Dragon {
         val dragon = Dragon(
             uuid = UUID.randomUUID(),
             owner = owner,
-            skin = plugin.settings.skins.random(),
+            skin = skin,
             stage = DragonStage.BABY,
             stageStartedAt = System.currentTimeMillis(),
             saddled = false,

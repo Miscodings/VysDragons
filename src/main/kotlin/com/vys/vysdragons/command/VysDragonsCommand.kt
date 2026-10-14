@@ -9,7 +9,7 @@ import org.bukkit.command.TabExecutor
 import org.bukkit.entity.Player
 
 /**
- * /vysdragons give <player> [amount] - give egg items
+ * /vysdragons give <player> [type] [amount] - give egg items (no type = random each)
  * /vysdragons reload                 - reload config.yml
  * /vysdragons info                   - stage/timer of the dragon or egg you're looking at
  * /vysdragons grow                   - finish the current stage/incubation of what you're looking at
@@ -35,11 +35,17 @@ class VysDragonsCommand(private val plugin: VysDragons) : TabExecutor {
     private fun give(sender: CommandSender, args: Array<out String>) {
         val target = args.getOrNull(1)?.let { Bukkit.getPlayerExact(it) }
             ?: return sender.sendMessage(settings.message("player-not-found"))
-        val amount = args.getOrNull(2)?.toIntOrNull()?.coerceIn(1, 64) ?: 1
-        if (plugin.eggs.give(target, amount)) {
+        // The type is optional; "/vd give <player> 5" still means five random eggs.
+        val typeArg = args.getOrNull(2)?.takeIf { it.toIntOrNull() == null }
+        val skin = typeArg?.takeIf { !it.equals("random", true) }?.let {
+            settings.matchSkin(it) ?: return sender.sendMessage(settings.message("unknown-type", "%type%" to it))
+        }
+        val amountArg = if (typeArg == null) args.getOrNull(2) else args.getOrNull(3)
+        val amount = amountArg?.toIntOrNull()?.coerceIn(1, 64) ?: 1
+        if (plugin.eggs.give(target, amount, skin)) {
             sender.sendMessage(settings.message("give-success", "%amount%" to amount.toString(), "%player%" to target.name))
         } else {
-            sender.sendMessage(settings.message("give-failed", "%item%" to settings.eggItemId))
+            sender.sendMessage(settings.message("give-failed", "%item%" to settings.eggItemId(skin ?: settings.skins.first())))
         }
     }
 
@@ -65,7 +71,7 @@ class VysDragonsCommand(private val plugin: VysDragons) : TabExecutor {
         }
         plugin.eggs.byEntity(target.uniqueId)?.let { egg ->
             val left = formatDuration((settings.eggHatchMillis - egg.progressMillis).coerceAtLeast(0L))
-            player.sendMessage(settings.message("info-egg", "%heated%" to egg.heated.toString(), "%time%" to left))
+            player.sendMessage(settings.message("info-egg", "%skin%" to egg.skin, "%heated%" to egg.heated.toString(), "%time%" to left))
             return
         }
         player.sendMessage(settings.message("no-target"))
@@ -105,6 +111,7 @@ class VysDragonsCommand(private val plugin: VysDragons) : TabExecutor {
         when (args.size) {
             1 -> listOf("give", "reload", "info", "grow").filter { it.startsWith(args[0].lowercase()) }
             2 -> if (args[0].equals("give", true)) Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
+            3 -> if (args[0].equals("give", true)) (settings.skins + "random").filter { it.startsWith(args[2], true) } else emptyList()
             else -> emptyList()
         }
 }

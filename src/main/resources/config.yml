@@ -20,6 +20,11 @@ egg:
   nexo-item: dragon_egg_fire
   # MythicMobs mob spawned when the egg is placed. The mob attaches its own model.
   mob-type: dragon_egg_fire
+  # Every skin has its own egg: the Nexo item and the MythicMobs mob are named from these
+  # patterns (%skin% is a name from dragon.skins), and hatch into that skin. The untyped
+  # nexo-item / mob-type above stay for old eggs, which roll a random skin.
+  nexo-item-pattern: "dragon_egg_%skin%"
+  mob-type-pattern: "dragon_egg_%skin%"
   heat:
     # Blocks that count as heat. Lit campfires only.
     blocks:
@@ -35,6 +40,14 @@ egg:
     scan-radius: 2
   # How often (ticks) a loaded egg re-checks its heat.
   check-interval-ticks: 20
+  # Animations in the egg models. `warm` loops while the egg is heated; `hatch` plays when
+  # it hatches: the baby appears hatch-spawn-after-ticks into it and the shell is removed
+  # at hatch-remove-after-ticks (20 ticks = 1 second).
+  animations:
+    warm: warm
+    hatch: hatch
+    hatch-spawn-after-ticks: 60
+    hatch-remove-after-ticks: 100
   # Floating status text above a placed egg (the text itself is in lang.yml).
   display:
     enabled: true

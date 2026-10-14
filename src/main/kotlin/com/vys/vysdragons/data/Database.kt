@@ -36,6 +36,7 @@ data class EggRow(
     val progressMillis: Long,
     val heated: Boolean,
     val checkedAt: Long,
+    val skin: String?,
 )
 
 /**
@@ -71,8 +72,14 @@ class Database(file: File, private val logger: Logger) {
                 """CREATE TABLE IF NOT EXISTS eggs (
                     uuid TEXT PRIMARY KEY, owner TEXT NOT NULL, world TEXT NOT NULL,
                     x REAL NOT NULL, y REAL NOT NULL, z REAL NOT NULL,
-                    progress_millis INTEGER NOT NULL, heated INTEGER NOT NULL, checked_at INTEGER NOT NULL)"""
+                    progress_millis INTEGER NOT NULL, heated INTEGER NOT NULL, checked_at INTEGER NOT NULL,
+                    skin TEXT)"""
             )
+            // Added with egg types; eggs from before have none and get a random skin on load.
+            val hasEggSkin = st.executeQuery("PRAGMA table_info(eggs)").use { rs ->
+                generateSequence { if (rs.next()) rs.getString("name") else null }.any { it == "skin" }
+            }
+            if (!hasEggSkin) st.execute("ALTER TABLE eggs ADD COLUMN skin TEXT")
         }
     }
 
@@ -89,7 +96,7 @@ class Database(file: File, private val logger: Logger) {
         EggRow(
             UUID.fromString(rs.getString("uuid")), UUID.fromString(rs.getString("owner")),
             rs.getString("world"), rs.getDouble("x"), rs.getDouble("y"), rs.getDouble("z"),
-            rs.getLong("progress_millis"), rs.getInt("heated") != 0, rs.getLong("checked_at"),
+            rs.getLong("progress_millis"), rs.getInt("heated") != 0, rs.getLong("checked_at"), rs.getString("skin"),
         )
     }
 
@@ -108,10 +115,14 @@ class Database(file: File, private val logger: Logger) {
     }
 
     fun saveEgg(row: EggRow) = write {
-        connection.prepareStatement("INSERT OR REPLACE INTO eggs VALUES (?,?,?,?,?,?,?,?,?)").use { ps ->
+        connection.prepareStatement(
+            "INSERT OR REPLACE INTO eggs (uuid, owner, world, x, y, z, progress_millis, heated, checked_at, skin) " +
+                "VALUES (?,?,?,?,?,?,?,?,?,?)"
+        ).use { ps ->
             ps.setString(1, row.uuid.toString()); ps.setString(2, row.owner.toString())
             ps.setString(3, row.world); ps.setDouble(4, row.x); ps.setDouble(5, row.y); ps.setDouble(6, row.z)
             ps.setLong(7, row.progressMillis); ps.setInt(8, if (row.heated) 1 else 0); ps.setLong(9, row.checkedAt)
+            ps.setString(10, row.skin)
             ps.executeUpdate()
         }
     }
