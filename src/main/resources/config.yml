@@ -51,7 +51,7 @@ egg:
   # Floating status text above a placed egg (the text itself is in lang.yml).
   display:
     enabled: true
-    height: 0.9
+    height: 1.1
 
 dragon:
   # MythicMobs mob type for each stage. The plugin attaches the ModelEngine model

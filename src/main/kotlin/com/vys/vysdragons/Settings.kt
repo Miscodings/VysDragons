@@ -40,7 +40,7 @@ class Settings(private val cfg: FileConfiguration, private val lang: FileConfigu
     val eggHatchSpawnTicks = cfg.getLong("egg.animations.hatch-spawn-after-ticks", 60L).coerceAtLeast(0L)
     val eggHatchRemoveTicks = cfg.getLong("egg.animations.hatch-remove-after-ticks", 100L).coerceAtLeast(eggHatchSpawnTicks)
     val eggDisplayEnabled = cfg.getBoolean("egg.display.enabled", true)
-    val eggDisplayHeight = cfg.getDouble("egg.display.height", 0.9)
+    val eggDisplayHeight = cfg.getDouble("egg.display.height", 1.1)
     val eggDisplayWarming: String = lang.getString("egg-display.warming", "")!!
     val eggDisplayIdle: String = lang.getString("egg-display.idle", "")!!
 
