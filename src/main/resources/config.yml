@@ -60,12 +60,12 @@ dragon:
   #   caster.saddled  - "true"/"false"
   #   caster.element  - breath-element below (selects which breath skill fires)
   #   caster.state    - "ground"
-  # All stages share one mob type by default, so growing up swaps the model on the
-  # same mob instead of respawning it. (A baby can't use the mount/flight skills:
-  # it can never be saddled.) Different types per stage work too, but respawn on growth.
+  # Babies and adults share one mob type, young dragons have their own (a little slower).
+  # Growing between stages that share a type swaps the model on the same mob; a different
+  # type respawns it. (A baby can't use the mount/flight skills: it can never be saddled.)
   mob-types:
     baby: cksmp_dragon_adult
-    young: cksmp_dragon_adult
+    young: cksmp_dragon_young
     adult: cksmp_dragon_adult
   # Optional MythicMobs skill cast on the mob right after its model is attached
   # (e.g. extra setup). Leave empty for none. Must NOT attach a model itself.

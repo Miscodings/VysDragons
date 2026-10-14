@@ -61,7 +61,7 @@ The plugin only references these by name, and every name can be changed in `conf
 - `egg.mob-type-pattern` (default `dragon_egg_%skin%`): the placed egg, one per skin; `egg.mob-type` (`dragon_egg_fire`) is the old untyped one. Each attaches its own model
   (e.g. `model{...}` on `~onSpawn`/`~onLoad`). `Type: WOLF` is recommended, because tamed
   wolves never despawn.
-- `dragon.mob-types.baby|young|adult` (default `cksmp_dragon_adult` for all three): the dragon
+- `dragon.mob-types.baby|young|adult` (default `cksmp_dragon_adult` for baby and adult, `cksmp_dragon_young` for young): the dragon
   body. `Type: WOLF`, AI goals cleared. The plugin attaches the ModelEngine model itself, so
   the mob should **not** attach one. It needs the mount/flight controller and breath skills
   on `~onInteract`. Babies share it safely, since they can never be saddled. With one shared
@@ -74,7 +74,7 @@ plugins/MythicMobs/Mobs/VysDragons/eggs.yml        dragon_egg_fire
 plugins/MythicMobs/Mobs/VysDragons/dragons.yml     cksmp_dragon_adult
 plugins/MythicMobs/Skills/VysDragons/flight.yml    mount + flight controller
 plugins/MythicMobs/Skills/VysDragons/breath.yml    fire breath
-plugins/ModelEngine/blueprints/vysdragons/{egg,baby,young,adult,adult_saddled}/
+plugins/ModelEngine/blueprints/vysdragons/{egg,baby,young,young_saddled,adult,adult_saddled}/
 ```
 
 Variables the plugin sets on every dragon mob:

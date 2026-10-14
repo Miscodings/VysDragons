@@ -13,18 +13,16 @@ Live on the Vys server (Paper 1.21.11) and verified in game:
 - Riding young/adult, flying, fire breath, and the adult passenger seat (`seat2`).
 - `/dragons` summon / put away, one dragon out at a time.
 
-**Remaining:** young dragon models. Young dragons work, but their models are unfinished:
-
-- No `robust_dragon_<skin>_young_saddled` models yet. Until they exist, saddling a young
-  dragon falls back to the unsaddled model (logged as a warning, see
-  `Dragon.resolveModelId`).
-- The young models only have `idle`, `walk` and `sit`. They need the flight set
-  (`idle_fly_raw`, `walk_fly_raw`, `ascend`, `descend`, `drift_left_raw`,
-  `drift_right_raw`, `land`) and `fire_breath`, plus `seat` and `firebreath` bones.
-
-Nothing in the plugin needs to change for those. Drop the models into
-`plugins/ModelEngine/blueprints/vysdragons/young/` (and a new `young_saddled/`), then run
-`meg reload` and `nexo reload pack`.
+Young dragon models are done (unsaddled in `young/`, saddled in `young_saddled/`). The
+unsaddled ones only carry `idle`, `walk`, `sit`, since they can't be ridden. The saddled
+ones have a `p_seat` bone (id `seat`), an empty `firebreath` bone under the jaw, a
+`dragon_turn` root for the drift animations, and the flight set + `fire_breath` retargeted
+from the adult (adult bone names mapped to the young rig, positions scaled by 0.38, wing
+tips that the young rig lacks dropped, keyframes thinned). Young dragons use their own
+Mythic mob, `cksmp_dragon_young` (`Mobs/VysDragons/dragons_young.yml`): same skills as the
+adult, slightly slower. Growing from baby to young respawns the body because the mob type
+differs. Eyes and the rein pair aren't animated in flight; the young rig has one `reins`
+group that follows the neck.
 
 Optional:
 
@@ -110,7 +108,7 @@ Layout:
 plugins/VysDragons/config.yml, lang.yml, data.db
 plugins/MythicMobs/Mobs/VysDragons/eggs.yml, dragons.yml
 plugins/MythicMobs/Skills/VysDragons/flight.yml, breath.yml
-plugins/ModelEngine/blueprints/vysdragons/{egg,baby,young,adult,adult_saddled}/
+plugins/ModelEngine/blueprints/vysdragons/{egg,baby,young,young_saddled,adult,adult_saddled}/
 plugins/Nexo/items/vysdragons.yml                         (egg item dragon_egg_fire)
 plugins/Nexo/pack/assets/minecraft/models/vysdragons/     (egg item model)
 plugins/Nexo/pack/assets/minecraft/textures/block/        (egg item texture)
@@ -142,4 +140,4 @@ keyframe fields (`uuid`, `color`) are removed. That took the dragon models from 
 | baby | idle, walk, sit, quirk |
 | young, adult, adult saddled | idle, walk, sit, idle_fly_raw, walk_fly_raw, ascend, descend, drift_left_raw, drift_right_raw, land, fire_breath |
 
-Do the same to the new young/young_saddled models once they exist.
+The young models were trimmed the same way (unsaddled: idle, walk, sit only).

@@ -171,8 +171,8 @@ class Dragon(
     }
 
     /**
-     * The saddled model if it exists, else the plain one. No young_saddled models exist
-     * yet, and a missing model would leave the dragon invisible.
+     * The saddled model if it exists, else the plain one. A missing model would leave
+     * the dragon invisible.
      */
     private fun resolveModelId(): String {
         val plain = settings.modelId(skin, stage, saddled = false)
