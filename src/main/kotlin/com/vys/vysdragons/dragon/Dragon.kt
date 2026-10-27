@@ -199,7 +199,7 @@ class Dragon(
             return
         }
         modeled.addModel(model, true)
-        Mounts.enable(model, stage.rideable, stage == DragonStage.ADULT)
+        Mounts.enable(model, stage.rideable, stage.rideable)
     }
 
     private fun updateNameplate(body: LivingEntity) {
