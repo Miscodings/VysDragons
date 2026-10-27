@@ -140,4 +140,6 @@ keyframe fields (`uuid`, `color`) are removed. That took the dragon models from 
 | baby | idle, walk, sit, quirk |
 | young, adult, adult saddled | idle, walk, sit, idle_fly_raw, walk_fly_raw, ascend, descend, drift_left_raw, drift_right_raw, land, fire_breath |
 
-The young models were trimmed the same way (unsaddled: idle, walk, sit only).
+The young models were trimmed the same way (unsaddled: idle, walk, sit only). The source
+young `sit` is a single keyframe at length 0, which ModelEngine ends at once, so the
+generated young models stretch it to a looping 2 s hold of the same pose (like the baby's).
