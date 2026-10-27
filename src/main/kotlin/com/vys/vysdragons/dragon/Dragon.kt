@@ -409,7 +409,7 @@ class Dragon(
 
     fun hasDriver(): Boolean = Mounts.of(activeModel(entity ?: return false))?.driver != null
 
-    /** Adult only: puts [player] on the passenger seat. */
+    /** Rideable stages only: puts [player] on the passenger seat (one passenger at a time). */
     fun seatPassenger(player: Player): Boolean {
         val model = activeModel(entity ?: return false) ?: return false
         return Mounts.mountPassenger(model, settings.passengerSeat, player)

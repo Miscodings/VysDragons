@@ -187,9 +187,9 @@ class DragonListener(private val plugin: VysDragons) : Listener {
         }
     }
 
-    /** Anyone but the owner: adults take a passenger while the owner is riding. */
+    /** Anyone but the owner: young and adult dragons take one passenger while the owner is riding. */
     private fun handleStranger(dragon: Dragon, player: Player) {
-        if (dragon.stage == DragonStage.ADULT && dragon.saddled && dragon.hasDriver()) {
+        if (dragon.stage.rideable && dragon.saddled && dragon.hasDriver()) {
             if (!dragon.seatPassenger(player)) player.sendMessage(settings.message("seat-taken"))
             return
         }

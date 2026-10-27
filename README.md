@@ -12,8 +12,8 @@ See [SPECS.md](SPECS.md) for the design brief.
 | --- | --- | --- |
 | **Egg** | 3 MC days of *heated* time (1 real hour by default) | Place the egg item on a block. It only warms up while at least `required-count` heat blocks (fire, soul fire, lava, magma, lit campfires) are within `scan-radius`. Without heat it sits idle and keeps its progress. Hit the egg to pick it back up. Its progress is saved on the item. |
 | **Baby** | 30 MC days (10 real hours) | Follows its owner around like a sidekick and plays its `quirk` animation now and then. |
-| **Young** | 60 MC days (20 real hours) | Same as an adult except for the second seat: saddle it to ride, fly and breathe fire. |
-| **Adult** | permanent | Rides, flies and breathes fire. While the owner is riding, any other player can right-click to take the passenger seat (`seat2`). |
+| **Young** | 60 MC days (20 real hours) | Saddle it to ride, fly and breathe fire. While the owner is riding, any other player can right-click to take the passenger seat (`seat2`, one passenger at a time). |
+| **Adult** | permanent | Same as young, stronger. |
 
 All timers use the real wall clock. They keep running while the owner is offline, the chunk
 is unloaded, or the server is down. Egg warmth is credited across unloads too, based on
@@ -95,7 +95,7 @@ through `<caster.damage>`.
 - `robust_dragon_<skin>_young_saddled` and `robust_dragon_<skin>_adult_saddled`.
 - Young and adult need a `seat` bone, a `firebreath` bone, and the flight controller's
   animations (`idle_fly_raw`, `walk_fly_raw`, `ascend`, `descend`, `land`, `fire_breath`, ...).
-  Adult also needs a `seat2` bone. All models need `sit`, and babies need `quirk`.
+  Young (saddled) and adult also need a `seat2` bone. All models need `sit`, and babies need `quirk`.
 - Nothing else is used. Animations the plugin and skills never play only bloat the
   resource pack: baby needs `idle walk sit quirk`; young/adult need `idle walk sit
   idle_fly_raw walk_fly_raw ascend descend drift_left_raw drift_right_raw land fire_breath`.

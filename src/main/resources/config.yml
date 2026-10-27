@@ -125,8 +125,8 @@ dragon:
   saddle-item: SADDLE
   unsaddle-item: SHEARS
 
-  # Adult passenger seat (ModelEngine bone id). While the owner is riding, any other
-  # player who right-clicks the adult takes this seat.
+  # Passenger seat (ModelEngine bone id) on young and adult dragons. While the owner is
+  # riding, any other player who right-clicks the dragon takes this seat (one at a time).
   passenger-seat: seat2
 
   follow:

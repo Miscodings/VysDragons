@@ -69,7 +69,7 @@ messages:
 
   # Growing up and dying
   grew-young: "<bold><gradient:#FF7A18:#FFB347>Your dragon grew up!</gradient></bold> <#C9C3D9>It's young now. Saddle it to ride.</#C9C3D9>"
-  grew-adult: "<bold><gradient:#FF7A18:#FFB347>Your dragon is fully grown!</gradient></bold> <#C9C3D9>It can carry a passenger now.</#C9C3D9>"
+  grew-adult: "<bold><gradient:#FF7A18:#FFB347>Your dragon is fully grown!</gradient></bold>"
   died: "<#FF6B6B>Your dragon has died.</#FF6B6B>"
 
   # Interacting

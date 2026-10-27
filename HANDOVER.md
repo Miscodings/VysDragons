@@ -10,12 +10,12 @@ Live on the Vys server (Paper 1.21.11) and verified in game:
 
 - Eggs: give, place, heat incubation, hit to pick up (progress kept), `/vd grow` to hatch.
 - Growth baby → young → adult with no leftover models; saddling with no leftover models.
-- Riding young/adult, flying, fire breath, and the adult passenger seat (`seat2`).
+- Riding young/adult, flying, fire breath, and the passenger seat (`seat2`) on young and adult.
 - `/dragons` summon / put away, one dragon out at a time.
 
 Young dragon models are done (unsaddled in `young/`, saddled in `young_saddled/`). The
 unsaddled ones only carry `idle`, `walk`, `sit`, since they can't be ridden. The saddled
-ones have a `p_seat` bone (id `seat`), an empty `firebreath` bone under the jaw, a
+ones have a `p_seat` bone (id `seat`), a `p_seat2` passenger bone behind it, an empty `firebreath` bone under the jaw, a
 `dragon_turn` root for the drift animations, and the flight set + `fire_breath` retargeted
 from the adult (adult bone names mapped to the young rig, positions scaled by 0.38, wing
 tips that the young rig lacks dropped, keyframes thinned). Young dragons use their own
