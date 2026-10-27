@@ -5,6 +5,7 @@ import com.vys.vysdragons.dragon.Dragon
 import com.vys.vysdragons.dragon.DragonStage
 import com.vys.vysdragons.util.SpawnBypass
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
+import com.ticxo.modelengine.api.events.ModelMountEvent
 import io.lumine.mythic.bukkit.events.MythicMobInteractEvent
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -173,6 +174,12 @@ class DragonListener(private val plugin: VysDragons) : Listener {
                 player.sendMessage(settings.message("unsaddled"))
             }
 
+            // A sitting dragon can't be mounted; sneak-click stands it up first.
+            dragon.sitting && !player.isSneaking -> {
+                event.setCancelled()
+                if (debounce(entityId)) player.sendMessage(settings.message("cant-ride-sitting"))
+            }
+
             player.isSneaking -> {
                 event.setCancelled()
                 if (!debounce(entityId)) return
@@ -189,11 +196,22 @@ class DragonListener(private val plugin: VysDragons) : Listener {
 
     /** Anyone but the owner: young and adult dragons take one passenger while the owner is riding. */
     private fun handleStranger(dragon: Dragon, player: Player) {
+        if (dragon.sitting) {
+            player.sendMessage(settings.message("cant-ride-sitting"))
+            return
+        }
         if (dragon.stage.rideable && dragon.saddled && dragon.hasDriver()) {
             if (!dragon.seatPassenger(player)) player.sendMessage(settings.message("seat-taken"))
             return
         }
         player.sendMessage(settings.message("not-your-dragon"))
+    }
+
+    /** Safety net for ModelEngine's own click-to-ride: nobody boards a sitting dragon. */
+    @EventHandler
+    fun onModelMount(event: ModelMountEvent) {
+        val dragon = plugin.dragons.byEntity(event.vehicle.modeledEntity.base.uuid) ?: return
+        if (dragon.sitting) event.isCancelled = true
     }
 
     /** Dragons and eggs are WOLF-based; block vanilla sit/feed/breed on them. */

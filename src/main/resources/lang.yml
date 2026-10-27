@@ -80,6 +80,7 @@ messages:
   too-young-to-saddle: "<#FF6B6B>Your dragon is too young for a saddle.</#FF6B6B>"
   needs-saddle: "<#FFC46B>Your dragon needs a saddle before you can ride it.</#FFC46B>"
   not-your-dragon: "<#FF6B6B>That isn't your dragon.</#FF6B6B>"
+  cant-ride-sitting: "<#FF6B6B>Your dragon is sitting.</#FF6B6B> <#C9C3D9>Sneak + right-click to make it stand first.</#C9C3D9>"
   seat-taken: "<#FF6B6B>The passenger seat is taken.</#FF6B6B>"
 
   # /dragons
